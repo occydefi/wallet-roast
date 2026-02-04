@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallet Roast | Get Roasted, Degen</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a0a0a 0%, #2d1810 100%);
+      min-height: 100vh;
+      color: #fff;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding-top: 40px;
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 4rem;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #ff6b35, #f7931e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #888;
+      margin-bottom: 40px;
+      font-size: 1.1rem;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    input {
+      flex: 1;
+      padding: 16px 20px;
+      font-size: 14px;
+      border: 2px solid #443;
+      border-radius: 12px;
+      background: #1a0a0a;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    input:focus {
+      border-color: #ff6b35;
+    }
+
+    input::placeholder {
+      color: #665;
+    }
+
+    button {
+      padding: 16px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #ff6b35, #f7931e);
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .result {
+      background: #1a0a0a;
+      border: 2px solid #443;
+      border-radius: 16px;
+      padding: 24px;
+      display: none;
+    }
+
+    .result.show {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .score-container {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .score {
+      display: inline-block;
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #ff6b35, #f7931e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .score-label {
+      display: block;
+      color: #888;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .roast-text {
+      line-height: 1.8;
+      color: #ddd;
+      font-size: 1.1rem;
+      padding: 20px;
+      background: #0d0505;
+      border-radius: 12px;
+      border-left: 4px solid #ff6b35;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #333;
+    }
+
+    .stat {
+      text-align: center;
+      padding: 12px;
+      background: #0d0505;
+      border-radius: 8px;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ff6b35;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #777;
+      margin-top: 4px;
+    }
+
+    .error {
+      background: #ff4d4d22;
+      border-color: #ff4d4d;
+    }
+
+    .error .roast-text {
+      color: #ff6b6b;
+      border-left-color: #ff4d4d;
+    }
+
+    .loading {
+      text-align: center;
+      color: #ff6b35;
+      font-size: 1.2rem;
+    }
+
+    .loading::after {
+      content: '';
+      animation: dots 1.5s infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+
+    .fire {
+      animation: fire 0.5s infinite alternate;
+    }
+
+    @keyframes fire {
+      from { transform: scale(1); }
+      to { transform: scale(1.1); }
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 60px;
+      color: #555;
+      font-size: 13px;
+    }
+
+    .footer a {
+      color: #ff6b35;
+      text-decoration: none;
+    }
+
+    .share-btn {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      background: #1a1a2e;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #888;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .share-btn:hover {
+      background: #252545;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">🔥</div>
+    <h1>Wallet Roast</h1>
+    <p class="subtitle">Paste your wallet. Get destroyed.</p>
+
+    <div class="input-group">
+      <input
+        type="text"
+        id="address"
+        placeholder="Paste Solana wallet address..."
+        onkeypress="if(event.key==='Enter') roast()"
+      >
+      <button onclick="roast()" id="btn">🔥 Roast Me</button>
+    </div>
+
+    <div class="result" id="result">
+      <div class="score-container">
+        <span class="score" id="score">-</span>
+        <span class="score-label">DEGEN SCORE</span>
+      </div>
+
+      <div class="roast-text" id="roastText"></div>
+
+      <div class="stats" id="stats">
+        <div class="stat">
+          <div class="stat-value" id="statTxs">-</div>
+          <div class="stat-label">TRANSACTIONS</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="statSwaps">-</div>
+          <div class="stat-label">SWAPS</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="statFailed">-</div>
+          <div class="stat-label">FAILED TXS</div>
+        </div>
+      </div>
+
+      <button class="share-btn" onclick="shareRoast()">
+        📋 Copy roast to share on Twitter
+      </button>
+    </div>
+  </div>
+
+  <div class="footer">
+    Built by <a href="https://github.com/occydefi/wallet-roast">Wallet-Roast Agent</a> for Colosseum Hackathon
+  </div>
+
+  <script>
+    const API_URL = '/api/roast';
+    let lastRoast = null;
+
+    async function roast() {
+      const input = document.getElementById('address');
+      const btn = document.getElementById('btn');
+      const result = document.getElementById('result');
+      const roastText = document.getElementById('roastText');
+      const score = document.getElementById('score');
+
+      const address = input.value.trim();
+      if (!address) return;
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="fire">🔥</span> Roasting...';
+      result.classList.add('show');
+      result.classList.remove('error');
+      roastText.innerHTML = '<p class="loading">Analyzing your poor life choices</p>';
+      score.textContent = '?';
+      document.getElementById('stats').style.display = 'none';
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ address }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to roast');
+        }
+
+        lastRoast = data;
+
+        // Display score
+        score.textContent = data.score ? `${data.score}/10` : '?/10';
+
+        // Display roast (remove the score line from text since we show it separately)
+        let cleanRoast = data.roast.replace(/DEGEN SCORE:?\s*\d+(\.\d+)?\s*\/\s*10/gi, '').trim();
+        roastText.innerHTML = formatRoast(cleanRoast);
+
+        // Display stats
+        if (data.stats) {
+          document.getElementById('stats').style.display = 'grid';
+          document.getElementById('statTxs').textContent = data.stats.totalTransactions || 0;
+          document.getElementById('statSwaps').textContent = data.stats.swaps || 0;
+          document.getElementById('statFailed').textContent = data.stats.failedTransactions || 0;
+        }
+
+      } catch (err) {
+        result.classList.add('error');
+        roastText.innerHTML = `<p>Error: ${err.message}</p>`;
+        score.textContent = '💀';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🔥 Roast Me';
+      }
+    }
+
+    function formatRoast(text) {
+      return text
+        .replace(/\n/g, '<br><br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    }
+
+    function shareRoast() {
+      if (!lastRoast) return;
+
+      const text = `🔥 My Wallet Roast Score: ${lastRoast.score}/10\n\n"${lastRoast.roast.substring(0, 200)}..."\n\nGet roasted: wallet-roast.vercel.app`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.share-btn');
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => {
+          btn.textContent = '📋 Copy roast to share on Twitter';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

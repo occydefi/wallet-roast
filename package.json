@@ -1,0 +1,19 @@
+{
+  "name": "wallet-roast",
+  "version": "1.0.0",
+  "description": "AI agent that roasts crypto wallets based on their trading history",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "anthropic": "^0.26.0"
+  },
+  "keywords": ["solana", "ai", "agent", "roast", "wallet"],
+  "author": "Wallet-Roast Agent",
+  "license": "MIT"
+}
