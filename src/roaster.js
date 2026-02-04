@@ -5,22 +5,69 @@ const anthropic = new Anthropic({
 });
 
 async function fetchWalletHistory(address) {
-  const heliusKey = process.env.HELIUS_API_KEY;
+  const rpcUrl = 'https://api.mainnet-beta.solana.com';
 
-  // Fetch recent transactions
-  const txUrl = `https://api.helius.xyz/v0/addresses/${address}/transactions?api-key=${heliusKey}&limit=50`;
-  const txResponse = await fetch(txUrl);
+  // Fetch recent transaction signatures
+  const sigResponse = await fetch(rpcUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'getSignaturesForAddress',
+      params: [address, { limit: 20 }],
+    }),
+  });
 
-  if (!txResponse.ok) {
+  if (!sigResponse.ok) {
     throw new Error('Failed to fetch wallet transactions');
   }
 
-  const transactions = await txResponse.json();
+  const sigData = await sigResponse.json();
+  const signatures = sigData.result || [];
 
-  // Fetch balances
-  const balanceUrl = `https://api.helius.xyz/v0/addresses/${address}/balances?api-key=${heliusKey}`;
-  const balanceResponse = await fetch(balanceUrl);
-  const balances = balanceResponse.ok ? await balanceResponse.json() : null;
+  // Fetch transaction details for first 10
+  const transactions = [];
+  for (const sig of signatures.slice(0, 10)) {
+    try {
+      const txResponse = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'getTransaction',
+          params: [sig.signature, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }],
+        }),
+      });
+      const txData = await txResponse.json();
+      if (txData.result) {
+        transactions.push({
+          signature: sig.signature,
+          blockTime: txData.result.blockTime,
+          err: sig.err,
+          memo: sig.memo,
+          ...txData.result,
+        });
+      }
+    } catch (e) {
+      // Skip failed fetches
+    }
+  }
+
+  // Fetch SOL balance
+  const balResponse = await fetch(rpcUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'getBalance',
+      params: [address],
+    }),
+  });
+  const balData = await balResponse.json();
+  const balances = { sol: balData.result?.value || 0 };
 
   return { transactions, balances };
 }
@@ -38,20 +85,23 @@ function analyzeWallet(transactions, balances) {
   };
 
   for (const tx of transactions) {
-    // Count transaction types
-    if (tx.type === 'SWAP') stats.swaps++;
-    if (tx.type === 'TRANSFER') stats.transfers++;
-    if (tx.type?.includes('NFT')) stats.nftTrades++;
-    if (tx.transactionError) stats.failedTxs++;
+    // Count failed transactions
+    if (tx.err) stats.failedTxs++;
 
-    // Track protocols
-    if (tx.source) stats.protocols.add(tx.source);
+    // Try to detect transaction types from instructions
+    const instructions = tx.transaction?.message?.instructions || [];
+    for (const ix of instructions) {
+      const program = ix.program || ix.programId;
+      if (program) stats.protocols.add(program);
 
-    // Track tokens
-    if (tx.tokenTransfers) {
-      tx.tokenTransfers.forEach(t => {
-        if (t.mint) stats.tokensTraded.add(t.mint);
-      });
+      // Detect swaps (Jupiter, Raydium, etc.)
+      if (program?.includes('JUP') || program?.includes('Swap')) stats.swaps++;
+
+      // Detect token transfers
+      if (program === 'spl-token' || ix.parsed?.type === 'transfer') {
+        stats.transfers++;
+        if (ix.parsed?.info?.mint) stats.tokensTraded.add(ix.parsed.info.mint);
+      }
     }
 
     // Detect suspicious patterns
